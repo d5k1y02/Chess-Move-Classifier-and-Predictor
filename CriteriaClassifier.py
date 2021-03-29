@@ -108,7 +108,54 @@ def knight_vision(position,in_piece):
             pos = position[in_piece[0]-2][in_piece[1]-1]
             if  pos != ('e','e'):
                 piece_list.append((in_piece[0]-2,in_piece[1]-1,pos[0],pos[1]))
+                
+    if in_piece[1] >=2: #left
+        if in_piece[0] <= 6:
+            pos = position[in_piece[0]+1][in_piece[1]-2]
+            if  pos != ('e','e'):
+                piece_list.append((in_piece[0]+1,in_piece[1]-2,pos[0],pos[1]))
+        if in_piece[0] >= 1:
+            pos = position[in_piece[0]-1][in_piece[1]-2]
+            if  pos != ('e','e'):
+                piece_list.append((in_piece[0]-1,in_piece[1]-2,pos[0],pos[1]))
+    
+    if in_piece[1] <= 5: #right
+        if in_piece[0] <= 6:
+            pos = position[in_piece[0]+1][in_piece[1]+2]
+            if  pos != ('e','e'):
+                piece_list.append((in_piece[0]+1,in_piece[1]+2,pos[0],pos[1]))
+        if in_piece[0] >= 1:
+            pos = position[in_piece[0]-1][in_piece[1]+2]
+            if  pos != ('e','e'):
+                piece_list.append((in_piece[0]-1,in_piece[1]+2,pos[0],pos[1]))
         
+    return piece_list
+
+"""(board, piece, color) Take a board position and a piece to move and return any pieces 
+the input can see 1 square diagonally in front of it. Front or behind is determined by color"""
+def pawn_vision(position, in_piece, color):
+    piece_list = [] #list of pieces the input contacts on 1-sqaure forward diagonal
+    
+    if color == 'w': #if color is white, look upward
+        if in_piece[1] <= 6:
+            pos = position[in_piece[0]-1][in_piece[1]+1]
+            if  pos != ('e','e'):
+                piece_list.append((in_piece[0]-1,in_piece[1]+1,pos[0],pos[1]))
+        if in_piece[1] >= 1:
+            pos = position[in_piece[0]-1][in_piece[1]-1]
+            if  pos != ('e','e'):
+                piece_list.append((in_piece[0]-1,in_piece[1]-1,pos[0],pos[1]))
+                
+    if color == 'b': #if color is black, look downward
+        if in_piece[1] <= 6:
+            pos = position[in_piece[0]+1][in_piece[1]+1]
+            if  pos != ('e','e'):
+                piece_list.append((in_piece[0]+1,in_piece[1]+1,pos[0],pos[1]))
+        if in_piece[1] >= 1:
+            pos = position[in_piece[0]+1][in_piece[1]-1]
+            if  pos != ('e','e'):
+                piece_list.append((in_piece[0]+1,in_piece[1]-1,pos[0],pos[1]))
+                
     return piece_list
 
 def is_check(position, move): #is move a check
@@ -117,27 +164,43 @@ def is_check(position, move): #is move a check
     position[move[0]][move[1]] = ('e','e')
     
     color = position[move[0]][move[1]][1] #color of player whose turn it is
+    opp_color = 'w'
+    if color == 'w':
+        opp_color = 'b'
+    
     piece_list = [] #(pos1,pos2,piece)
-    enemy_king_pos = (0,0)
     
     for i in range(8):
         for j in range(8):
             if position[i][j][1] == color:
                 piece_list.append((i, j, position[i][j][0])) #add every friendly piece to the list
-            else:
-                if position[i][j][0] == 'k':
-                    enemy_king_pos = (i,j)
+                
     for piece in piece_list:
         if piece[2] == 'q':
-            return True
+            pieces_seen = diag_vision(position, piece) + straight_vision(position, piece)
+            for p in pieces_seen:
+                if(p[2] == 'k' and p[3] == opp_color):
+                    return True
         elif piece[2] == 'r':
-            return True
+            pieces_seen = straight_vision(position, piece)
+            for p in pieces_seen:
+                if(p[2] == 'k' and p[3] == opp_color):
+                    return True
         elif piece[2] == 'n':
-            return True
+            pieces_seen = knight_vision(position, piece)
+            for p in pieces_seen:
+                if(p[2] == 'k' and p[3] == opp_color):
+                    return True
         elif piece[2] == 'b':
-            return True
+            pieces_seen = diag_vision(position, piece)
+            for p in pieces_seen:
+                if(p[2] == 'k' and p[3] == opp_color):
+                    return True
         elif piece[2] == 'p':
-            return True
+            pieces_seen = pawn_vision(position, piece)
+            for p in pieces_seen:
+                if(p[2] == 'k' and p[3] == opp_color):
+                    return True
     return False
 
 def is_attack(position, move): #does move attack a piece
