@@ -12,13 +12,15 @@ notation is as follows: k = king, q = queen, n = knight, b = bishop,r = rook and
 
 
     
-"""converts chess fen format to an array in the format board[coord1][coord2] = (piece, color)"""    
+    
 
 from collections import Counter
 
+"""converts chess fen format to an array in the format board[coord1][coord2] = (piece, color)"""
 def fen_to_array():
     
     board = [[('e', 'e') for i in range(8)] for j in range(8)] #board[coord1][coord2] = (piece, color)
+    #FINISH
     return board
 
 def is_developing(position, move): #improve position of piece CURRENTLY TRUE IF PIECE MOVED IS NOT A PAWN OR KING
@@ -279,12 +281,14 @@ def is_attack(position, move): #does move attack a piece
         elif piece[2] == 'k':
             pieces_seen.extend(king_vision(position, piece))
             
-            need to delete friendly pieces
+        for p in pieces_seen:
+            if position[p[0],p[1]][1] == color:
+                pieces_seen.remove(p)
             
-        pre_move_counter = Counter(pieces_seen)  
+    pre_move_counter = Counter(pieces_seen)  
         
-        position[move[2]][move[3]] = position[move[0]][move[1]] #make the move
-        position[move[0]][move[1]] = ('e','e')
+    position[move[2]][move[3]] = position[move[0]][move[1]] #make the move FIX FOR CASTLING
+    position[move[0]][move[1]] = ('e','e')
         
     for piece in piece_list:
         if piece[2] == 'q':
@@ -304,8 +308,12 @@ def is_attack(position, move): #does move attack a piece
         
         elif piece[2] == 'k':
             pieces_seen.extend(king_vision(position, piece))
+        
+    for p in pieces_seen:
+            if position[p[0],p[1]][1] == color:
+                pieces_seen.remove(p)
                 
-        post_move_counter = Counter(pieces_seen) 
+    post_move_counter = Counter(pieces_seen) 
     
     diff = post_move_counter - pre_move_counter
     if diff != Counter():
@@ -384,22 +392,15 @@ def is_retreat(position, move): #does move retreat an attacked piece
         return True
     return False
 
-def is_promotion(position, move): #does move promote a pawn
-
-    color = position[move[0]][move[1]][1] #color of player whose turn it is
-    opp_color = 'w'
-    if color == 'w':
-        opp_color = 'b'
+def is_pawnpush(position, move):
     if position[move[0]][move[1]][0] == 'p':
-        
-        if color == 'w': #if color is white, look upward
-            if in_piece[0] == 1:
-                return True
-                    
-        elif color == 'b': #if color is black, look downward
-            if in_piece[0] == 6:
-                return True
-               
+        return True
+    return False
+
+def is_kingmove(position, move):
+    if position[move[0]][move[1]][0] == 'k':
+        return True
+    return False
 
 """ accepts a position in the array format created by fen_to_array and a move tuple 
 (pos1l,pos1n,pos2l,pos2n) and returns a dictionary of classifications that apply to that move"""
@@ -412,7 +413,7 @@ def move_classifier(position, move):
     criteria["CAPTURE"].append(is_capture(position, move))
     criteria["DEFEND"].append(is_defense(position, move))
     criteria["RETREAT"].append(is_retreat(position, move))
-    criteria["PROMOTE"].append(is_promotion(position, move))
+    criteria["PAWNPUSH"].append(is_pawnpush(position, move))
+    criteria["KINGMOVE"].append(is_kingmove(position, move))
     
     return criteria
-
