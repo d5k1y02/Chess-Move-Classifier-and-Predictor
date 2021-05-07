@@ -13,15 +13,10 @@ notation is as follows: k = king, q = queen, n = knight, b = bishop,r = rook and
 
     
     
-
+import chess.pgn
+import copy
 from collections import Counter
 
-"""converts chess fen format to an array in the format board[coord1][coord2] = (piece, color)"""
-def fen_to_array():
-    
-    board = [[('e', 'e') for i in range(8)] for j in range(8)] #board[coord1][coord2] = (piece, color)
-    #FINISH
-    return board
 
 def is_developing(position, move): #improve position of piece CURRENTLY TRUE IF PIECE MOVED IS NOT A PAWN OR KING
     if position[move[0]][move[1]][0] == 'r' or position[move[0]][move[1]][0] == 'q'\
@@ -46,13 +41,13 @@ def diag_vision(position,in_piece):
             break
         
     for i in range(min(in_piece[0], in_piece[1])): #up-left
-        pos = position[in_piece[0]+i][in_piece[1]-i]
+        pos = position[in_piece[0]-i][in_piece[1]-i]
         if  pos != ('e','e'):
             piece_list.append((in_piece[0]+i,in_piece[1]-i,pos[0],pos[1]))
             break
         
     for i in range(min((8-in_piece[0]), in_piece[1])): #down-left
-        pos = position[in_piece[0]-i][in_piece[1]-i]
+        pos = position[in_piece[0]+i][in_piece[1]-i]
         if  pos != ('e','e'):
             piece_list.append((in_piece[0]-i,in_piece[1]-i,pos[0],pos[1]))
             break
@@ -142,21 +137,21 @@ def pawn_vision(position, in_piece, color):
     piece_list = [] #list of pieces the input contacts on 1-sqaure forward diagonal
     
     if color == 'w': #if color is white, look upward
-        if in_piece[1] <= 6:
+        if in_piece[0] >= 1 and in_piece[1] <= 6:
             pos = position[in_piece[0]-1][in_piece[1]+1]
             if  pos != ('e','e'):
                 piece_list.append((in_piece[0]-1,in_piece[1]+1,pos[0],pos[1]))
-        if in_piece[1] >= 1:
+        if in_piece[0] >= 1 and in_piece[1] >= 1:
             pos = position[in_piece[0]-1][in_piece[1]-1]
             if  pos != ('e','e'):
                 piece_list.append((in_piece[0]-1,in_piece[1]-1,pos[0],pos[1]))
                 
     if color == 'b': #if color is black, look downward
-        if in_piece[1] <= 6:
+        if in_piece[0] <= 6 and in_piece[1] <= 6:
             pos = position[in_piece[0]+1][in_piece[1]+1]
             if  pos != ('e','e'):
                 piece_list.append((in_piece[0]+1,in_piece[1]+1,pos[0],pos[1]))
-        if in_piece[1] >= 1:
+        if in_piece[0] <= 6 and in_piece[1] >= 1:
             pos = position[in_piece[0]+1][in_piece[1]-1]
             if  pos != ('e','e'):
                 piece_list.append((in_piece[0]+1,in_piece[1]-1,pos[0],pos[1]))
@@ -193,11 +188,11 @@ def king_vision(position, in_piece):
         pos = position[in_piece[0]+1][in_piece[1]]
         if  pos != ('e','e'):
             piece_list.append((in_piece[0]+1,in_piece[1],pos[0],pos[1]))     
-    if in_piece[1] >= 1: #right
+    if in_piece[1] <= 6: #right
         pos = position[in_piece[0]][in_piece[1]+1]
         if  pos != ('e','e'):
             piece_list.append((in_piece[0],in_piece[1]+1,pos[0],pos[1]))
-    if in_piece[1] <= 6: #left
+    if in_piece[1] >= 1: #left
         pos = position[in_piece[0]][in_piece[1]-1]
         if  pos != ('e','e'):
             piece_list.append((in_piece[0],in_piece[1]-1,pos[0],pos[1]))
@@ -240,7 +235,7 @@ def is_check(position, move): #is move a check
                 if(p[2] == 'k' and p[3] == opp_color):
                     return True
         elif piece[2] == 'p':
-            pieces_seen = pawn_vision(position, piece)
+            pieces_seen = pawn_vision(position, piece, color)
             for p in pieces_seen:
                 if(p[2] == 'k' and p[3] == opp_color):
                     return True
@@ -276,15 +271,15 @@ def is_attack(position, move): #does move attack a piece
             pieces_seen.extend(diag_vision(position, piece))
             
         elif piece[2] == 'p':
-            pieces_seen.extend(pawn_vision(position, piece))
+            pieces_seen.extend(pawn_vision(position, piece, color))
         
         elif piece[2] == 'k':
             pieces_seen.extend(king_vision(position, piece))
             
-        for p in pieces_seen:
-            if position[p[0],p[1]][1] == color:
-                pieces_seen.remove(p)
-            
+    for p in pieces_seen:
+        if position[p[0]][p[1]][1] == color:
+            pieces_seen.remove(p)
+        
     pre_move_counter = Counter(pieces_seen)  
         
     position[move[2]][move[3]] = position[move[0]][move[1]] #make the move FIX FOR CASTLING
@@ -304,14 +299,15 @@ def is_attack(position, move): #does move attack a piece
             pieces_seen.extend(diag_vision(position, piece))
             
         elif piece[2] == 'p':
-            pieces_seen.extend(pawn_vision(position, piece))
+            pieces_seen.extend(pawn_vision(position, piece, color))
         
         elif piece[2] == 'k':
             pieces_seen.extend(king_vision(position, piece))
         
     for p in pieces_seen:
-            if position[p[0],p[1]][1] == color:
-                pieces_seen.remove(p)
+        if position[p[0]][p[1]][1] == color:
+            pieces_seen.remove(p)
+                    
                 
     post_move_counter = Counter(pieces_seen) 
     
@@ -319,6 +315,47 @@ def is_attack(position, move): #does move attack a piece
     if diff != Counter():
         return True
                 
+    return False
+def is_move_attacking(board, move):
+    
+    if board.is_capture(move):
+        return False
+    board_copy = copy.deepcopy(board)
+    board_copy.push(move)
+    p_list = board.piece_map()
+    ep_list = []
+        
+        
+    for sq, s in p_list.items():
+        if board.turn:
+            if s.symbol().islower():
+                ep_list.append((sq, s))
+        else:
+            if s.symbol().isupper():
+                ep_list.append((sq, s))
+    
+    p_list2 = board_copy.piece_map()
+    ep_list2 = []
+    
+    for sq, s in p_list2.items():
+        if board.turn:
+            if s.symbol().islower():
+                ep_list2.append((sq, s))
+        else:
+            if s.symbol().isupper():
+                ep_list2.append((sq, s))
+                
+    attackers_list = []     
+    attackers_list_after_move = []      
+    for n, s in ep_list:
+        attackers_list.append(len(board.attackers(board.turn, n)))
+        
+    for n, s in ep_list2:
+        attackers_list_after_move.append(len(board_copy.attackers(board.turn, n)))
+        
+    for i in range(len(attackers_list)):
+        if attackers_list_after_move[i] > attackers_list[i]:
+            return True
     return False
 
 def is_capture(position, move): #is move a capture
@@ -345,7 +382,12 @@ def is_piece_attacked(position, move, input_piece): #determine if the input piec
     for p in temp_list:
         if p[3] == opp_color and (p[2] ==  'n'):
             return True
-    temp_list = pawn_vision(position, input_piece)
+    if(color == 'w'):
+        if(input_piece[0] != 0):
+            temp_list = pawn_vision(position, input_piece, color)
+    if(color == 'b'):
+        if(input_piece[0] != 7):
+            temp_list = pawn_vision(position, input_piece, color)
     for p in temp_list:
         if p[3] == opp_color and (p[2] ==  'p'):
             return True
@@ -359,13 +401,14 @@ def is_piece_attacked(position, move, input_piece): #determine if the input piec
 def is_defense(position, move): #does move defend a piece or pawn under attack
 
     #first list all attacked pieces and pawns on your side
+    color = position[move[0]][move[1]][1] #color of player whose turn it is
     attacked_list = []
     for i in range(8):
         for j in range(8):
             if is_piece_attacked(position, move, (i, j, position[i][j][0])):
                 attacked_list.append((i, j, position[i][j][0]))
     pieces_seen = []
-    p = (move[2], move[3], position[move[0], move[1]][0])
+    p = (move[2], move[3], position[move[0]][move[1]][0])
     if p[2] == 'q':
         pieces_seen = diag_vision(position, p) + straight_vision(position, p)
     elif p[2] == 'r':
@@ -378,7 +421,7 @@ def is_defense(position, move): #does move defend a piece or pawn under attack
         pieces_seen.extend(diag_vision(position, p))
         
     elif p[2] == 'p':
-        pieces_seen.extend(pawn_vision(position, p))
+        pieces_seen.extend(pawn_vision(position, p, color))
     else:
         pieces_seen.extend(king_vision(position, p))
         
@@ -404,16 +447,176 @@ def is_kingmove(position, move):
 
 """ accepts a position in the array format created by fen_to_array and a move tuple 
 (pos1l,pos1n,pos2l,pos2n) and returns a dictionary of classifications that apply to that move"""
-def move_classifier(position, move):
-    
+def move_classifier(position,board, move, move_original):
     criteria = {}                 #define criteria-this may grow as needed
-    criteria["DEVELOPE"].append(is_developing(position, move))
-    criteria["CHECK"].append(is_check(position, move))
-    criteria["ATTACK"].append(is_attack(position, move))
-    criteria["CAPTURE"].append(is_capture(position, move))
-    criteria["DEFEND"].append(is_defense(position, move))
-    criteria["RETREAT"].append(is_retreat(position, move))
-    criteria["PAWNPUSH"].append(is_pawnpush(position, move))
-    criteria["KINGMOVE"].append(is_kingmove(position, move))
+    positiond = copy.deepcopy(position) #not memory efficient, but doesn't work otherwise
+    positionc = copy.deepcopy(position)
+    positionc2 = copy.deepcopy(position)
+    positiond2 = copy.deepcopy(position)
+    positionr = copy.deepcopy(position)
+    criteria["DEVELOPE"] = (is_developing(positiond, move))
+    criteria["CHECK"] = (board.gives_check(move_original))
+    criteria["ATTACK"] = (is_move_attacking(board, move_original))
+    criteria["CAPTURE"] = (is_capture(positionc2, move))
+    criteria["DEFEND"] = (is_defense(positiond2, move))
+    criteria["RETREAT"] = (is_retreat(positionr, move))
+    criteria["PAWNPUSH"] = (is_pawnpush(position, move))
+    criteria["KINGMOVE"] = (is_kingmove(position, move))
     
     return criteria
+
+"""converts chess fen format to an array in the format board[coord1][coord2] = (piece, color)"""
+def fen_to_array(input_fen):
+    
+    position = [[('e', 'e') for i in range(8)] for j in range(8)] #board[coord1][coord2] = (piece, color)
+    fen = input_fen.replace('/', ',')
+    fen = fen.replace(' ', ',')
+    ranks = fen.split(',')
+    k = 0
+    for i in range(8):
+        for j in ranks[i]:
+            if not(j.isdigit()):
+                if j.islower():
+                    position[i][k] = (j, 'b')
+                    k+=1
+                else:
+                    position[i][k] = (j.lower(), 'w')
+                    k+=1
+            else:
+                k+=int(j)
+        k = 0
+    return position
+
+def create_classify_file(input_file, label_csv, is_testset = False):
+    if(is_testset):
+        criteria = {}
+        position = [[('e', 'e') for i in range(8)] for j in range(8)]
+        pgn = open(input_file)
+        labels = open(label_csv, "a")
+        i = 0
+        game = chess.pgn.read_game(pgn)
+        while(game):
+            # Iterate through all moves and play them on a board.
+            board = game.board()
+            for move in game.mainline_moves():
+                move_t = (7-chess.square_rank(move.from_square), chess.square_file(move.from_square),\
+                    7-chess.square_rank(move.to_square), chess.square_file(move.to_square) )
+                position = fen_to_array(board.fen())
+                i+=1;
+                criteria = move_classifier(position,board,move_t, move)
+                board.push(move)
+                directory = ""
+                labelname = ""
+                move_class = 0
+                if criteria["CAPTURE"]:
+                    directory = "chessdataset/test/CAPTURE/"
+                    labelname = "CAPTURE/"
+                    move_class = 0
+                elif criteria["CHECK"]:
+                    directory = "chessdataset/test/CHECK/"
+                    labelname = "CHECK/"
+                    move_class = 1
+                elif criteria["ATTACK"]:
+                    directory = "chessdataset/test/ATTACK/"
+                    labelname = "ATTACK/"
+                    move_class = 2
+                elif criteria["DEFEND"]:
+                    directory = "chessdataset/test/DEFEND/"
+                    labelname = "DEFEND/"
+                    move_class = 3
+                elif criteria["RETREAT"]:
+                    directory = "chessdataset/test/RETREAT/"
+                    labelname = "RETREAT/"
+                    move_class = 4
+                elif criteria["PAWNPUSH"]:
+                    directory = "chessdataset/test/PAWNPUSH/"
+                    labelname = "PAWNPUSH/"
+                    move_class = 5
+                elif criteria["KINGMOVE"]:
+                    directory = "chessdataset/test/KINGMOVE/"
+                    labelname = "KINGMOVE/"
+                    move_class = 6
+                else:
+                    directory = "chessdataset/test/DEVELOPE/"
+                    labelname = "DEVELOPE/"
+                    move_class = 7
+                
+                filename = directory + "position"+ str(i) +".txt"
+                labelname = labelname + "position"+ str(i) + ".txt"
+                pos_file = open(filename, "w+")
+                print(filename + ',', move_class, file = labels)
+                for r in position:
+                    print(r, file = pos_file)
+                # print(criteria)
+                pos_file.close()
+            game = chess.pgn.read_game(pgn)
+    else:
+        criteria = {}
+        position = [[('e', 'e') for i in range(8)] for j in range(8)]
+        pgn = open(input_file)
+        labels = open(label_csv, "a")
+        i = 0
+        game = chess.pgn.read_game(pgn)
+        while(game):
+            # Iterate through all moves and play them on a board.
+            board = game.board()
+            for move in game.mainline_moves():
+                move_t = (7-chess.square_rank(move.from_square), chess.square_file(move.from_square),\
+                    7-chess.square_rank(move.to_square), chess.square_file(move.to_square) )
+                position = fen_to_array(board.fen())
+                i+=1;
+                criteria = move_classifier(position,board,move_t, move)
+                board.push(move)
+                directory = ""
+                labelname = ""
+                move_class = 0
+                if criteria["CAPTURE"]:
+                    directory = "chessdataset/train/CAPTURE/"
+                    labelname = "CAPTURE/"
+                    move_class = 0
+                elif criteria["CHECK"]:
+                    directory = "chessdataset/train/CHECK/"
+                    labelname = "CHECK/"
+                    move_class = 1
+                elif criteria["ATTACK"]:
+                    directory = "chessdataset/train/ATTACK/"
+                    labelname = "ATTACK/"
+                    move_class = 2
+                elif criteria["DEFEND"]:
+                    directory = "chessdataset/train/DEFEND/"
+                    labelname = "DEFEND/"
+                    move_class = 3
+                elif criteria["RETREAT"]:
+                    directory = "chessdataset/train/RETREAT/"
+                    labelname = "RETREAT/"
+                    move_class = 4
+                elif criteria["PAWNPUSH"]:
+                    directory = "chessdataset/train/PAWNPUSH/"
+                    labelname = "PAWNPUSH/"
+                    move_class = 5
+                elif criteria["KINGMOVE"]:
+                    directory = "chessdataset/train/KINGMOVE/"
+                    labelname = "KINGMOVE/"
+                    move_class = 6
+                else:
+                    directory = "chessdataset/train/DEVELOPE/"
+                    labelname = "DEVELOPE/"
+                    move_class = 7
+                
+                filename = directory + "position"+ str(i) +".txt"
+                labelname = labelname + "position"+ str(i) + ".txt"
+                pos_file = open(filename, "w+")
+                print(filename + ',', move_class, file = labels)
+                for r in position:
+                    print(r, file = pos_file)
+                # print(criteria)
+                pos_file.close()
+            game = chess.pgn.read_game(pgn)
+    return True
+    
+
+l_csv_train = "chess_labels_train.csv"
+l_csv_test = "chess_labels_test.csv"
+create_classify_file("chess_com_games_2021-04-24.pgn", l_csv_train)    
+create_classify_file("chess_com_games_2021-04-24.pgn", l_csv_test, True)  
+    
