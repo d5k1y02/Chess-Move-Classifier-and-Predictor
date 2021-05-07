@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Apr 26 16:29:06 2021
-
+This code is primarily based on the code from https://github.com/pytorch/tutorials/blob/master/beginner_source/basics/data_tutorial.py
 @author: Desmond
 """
 import os
