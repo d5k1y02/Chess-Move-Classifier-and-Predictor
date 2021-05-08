@@ -20,10 +20,10 @@ from torchvision.transforms import ToTensor, Lambda
 
 # Hyper-parameters
 input_size = 128
-hidden_size = 60
+hidden_size = 64
 num_classes = 8
 num_epochs = 10
-batch_size = 24
+batch_size = 20
 learning_rate = 0.001
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
