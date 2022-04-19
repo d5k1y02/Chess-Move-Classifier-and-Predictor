@@ -1,2 +1,6 @@
 1000-1200EloGamesTestSet5000.pgn
 1000-1200EloGamesTrainingSet10000.pgn
+chessdataset/
+chess_labels_test.csv
+chess_labels_train.csv
+chess_com_games_2021-04-24.pgn

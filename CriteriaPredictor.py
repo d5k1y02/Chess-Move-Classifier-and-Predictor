@@ -2,7 +2,7 @@
 """
 Created on Mon Apr 26 16:29:06 2021
 This code is primarily based on the code from https://github.com/pytorch/tutorials/blob/master/beginner_source/basics/data_tutorial.py
-@author: Desmond
+@author: Desmond Yancey
 """
 import os
 import pandas as pd
@@ -21,10 +21,10 @@ from torchvision.transforms import ToTensor, Lambda
 # Hyper-parameters
 input_size = 128
 hidden_size = 64
-num_classes = 8
+num_classes = 6
 num_epochs = 10
 batch_size = 20
-learning_rate = 0.001
+learning_rate = 0.05
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 arr_csv_train = "chess_labels_train.csv"
@@ -73,9 +73,9 @@ class ChessDataset(Dataset):
 # dataset
 
 
-train_dataset = ChessDataset(arr_csv_train, pos_dir, transforms.ToTensor(), Lambda(lambda y: torch.zeros(8, dtype=torch.float).scatter_(0, torch.tensor(y), value=1)))
+train_dataset = ChessDataset(arr_csv_train, pos_dir, transforms.ToTensor(), Lambda(lambda y: torch.zeros(6, dtype=torch.float).scatter_(0, torch.tensor(y), value=1)))
 
-test_dataset = ChessDataset(arr_csv_test, pos_dir, transforms.ToTensor(), Lambda(lambda y: torch.zeros(8, dtype=torch.float).scatter_(0, torch.tensor(y), value=1)))
+test_dataset = ChessDataset(arr_csv_test, pos_dir, transforms.ToTensor(), Lambda(lambda y: torch.zeros(6, dtype=torch.float).scatter_(0, torch.tensor(y), value=1)))
 
 
 # Data loader
