@@ -162,37 +162,29 @@ def create_classify_file(input_file, label_csv, is_testset = False):
                 piece_class = move_classifier(position,board,move_t, move)
                 board.push(move)
                 directory = ""
-                labelname = ""
                 move_class = 0
                 if piece_class["PAWN"]:
-                    directory = "chessdataset/test/PAWN/"
-                    labelname = "PAWN/"
+                    directory = "chessdataset/test/"
                     move_class = 0
                 elif piece_class["ROOK"]:
-                    directory = "chessdataset/test/ROOK/"
-                    labelname = "ROOK/"
+                    directory = "chessdataset/test/"
                     move_class = 1
                 elif piece_class["KNIGHT"]:
-                    directory = "chessdataset/test/KNIGHT/"
-                    labelname = "KNIGHT/"
+                    directory = "chessdataset/test/"
                     move_class = 2
                 elif piece_class["BISHOP"]:
-                    directory = "chessdataset/test/BISHOP/"
-                    labelname = "BISHOP/"
+                    directory = "chessdataset/test/"
                     move_class = 3
                 elif piece_class["QUEEN"]:
-                    directory = "chessdataset/test/QUEEN/"
-                    labelname = "QUEEN/"
+                    directory = "chessdataset/test/"
                     move_class = 4
                 elif piece_class["KING"]:
-                    directory = "chessdataset/test/KING/"
-                    labelname = "KING/"
+                    directory = "chessdataset/test/"
                     move_class = 5
                 else:
                     print("error, piece class has invalid value")
                 
                 filename = directory + "position"+ str(i) +".txt"
-                labelname = labelname + "position"+ str(i) + ".txt"
                 pos_file = open(filename, "w+")
                 print(filename + ',', move_class, file = labels)
                 for r in position:
@@ -214,41 +206,34 @@ def create_classify_file(input_file, label_csv, is_testset = False):
                 move_t = (7-chess.square_rank(move.from_square), chess.square_file(move.from_square),\
                     7-chess.square_rank(move.to_square), chess.square_file(move.to_square) )
                 position = fen_to_array(board.fen())
-                i+=1;
+                i+=1
                 piece_class = move_classifier(position,board,move_t, move)
                 board.push(move)
                 directory = ""
                 labelname = ""
                 move_class = 0
                 if piece_class["PAWN"]:
-                    directory = "chessdataset/train/PAWN/"
-                    labelname = "PAWN/"
+                    directory = "chessdataset/train/"
                     move_class = 0
                 elif piece_class["ROOK"]:
-                    directory = "chessdataset/train/ROOK/"
-                    labelname = "ROOK/"
+                    directory = "chessdataset/train/"
                     move_class = 1
                 elif piece_class["KNIGHT"]:
-                    directory = "chessdataset/train/KNIGHT/"
-                    labelname = "KNIGHT/"
+                    directory = "chessdataset/train/"
                     move_class = 2
                 elif piece_class["BISHOP"]:
-                    directory = "chessdataset/train/BISHOP/"
-                    labelname = "BISHOP/"
+                    directory = "chessdataset/train/"
                     move_class = 3
                 elif piece_class["QUEEN"]:
-                    directory = "chessdataset/train/QUEEN/"
-                    labelname = "QUEEN/"
+                    directory = "chessdataset/train/"
                     move_class = 4
                 elif piece_class["KING"]:
-                    directory = "chessdataset/train/KING/"
-                    labelname = "KING/"
+                    directory = "chessdataset/train/"
                     move_class = 5
                 else:
                     print("error, piece class has invalid value")
                 
                 filename = directory + "position"+ str(i) +".txt"
-                labelname = labelname + "position"+ str(i) + ".txt"
                 pos_file = open(filename, "w+")
                 print(filename + ',', move_class, file = labels)
                 for r in position:
