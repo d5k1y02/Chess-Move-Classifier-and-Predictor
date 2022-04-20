@@ -4,3 +4,7 @@ chessdataset/
 chess_labels_test.csv
 chess_labels_train.csv
 chess_com_games_2021-04-24.pgn
+1000-1200EloRapidGamesTestSet500.pgn
+1000-1200EloRapidGamesTrainingSet1000.pgn
+unprocesseddata/lichess_db_standard_rated_2014-09.pgn.bz2
+unprocesseddata/lichess_db_standard_rated_2014-09.pgn
