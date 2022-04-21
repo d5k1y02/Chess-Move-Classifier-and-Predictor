@@ -6,6 +6,9 @@
 import os
 import numpy as np
 from sklearn import tree
+from joblib import dump, load
+
+
 
 
 
@@ -40,21 +43,25 @@ def get_positions(path):
     return positions
 
 
-def use_tree_classifier():
+def train_tree_classifier():
     X_train = np.array(get_positions("./chessdataset/train/"))
-    X_test = np.array(get_positions("./chessdataset/test/"))
     y_train = get_labels("chess_labels_train.csv")
-    y_test = get_labels("chess_labels_test.csv")
+    
+
     d1, d2, d3, d4 = X_train.shape
     X_train2 = X_train.reshape((d1, d2*d3*d4))
-
-    d1, d2, d3, d4 = X_test.shape
-    X_train2 = X_test.reshape((d1, d2*d3*d4))
-
-
     clf = tree.DecisionTreeClassifier()
     clf = clf.fit(X_train2, y_train)
-    print(clf.score(X_train2, y_test))
+    
+    dump(clf, 'tree.joblib')
     return 
 
-use_tree_classifier()
+X_test = np.array(get_positions("./chessdataset/test/"))
+y_test = get_labels("chess_labels_test.csv")
+
+d1, d2, d3, d4 = X_test.shape
+X_test2 = X_test.reshape((d1, d2*d3*d4))
+
+train_tree_classifier()
+clf = load('tree.joblib')
+print(clf.score(X_test2, y_test))
