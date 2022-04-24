@@ -236,8 +236,10 @@ def create_classify_file(input_file, label_csv, is_testset = False):
                 filename = directory + "position"+ str(i) +".txt"
                 pos_file = open(filename, "w+")
                 print(filename + ',', move_class, file = labels)
+                b = []
                 for r in position:
-                    print(r, file = pos_file)
+                    b.append(r)
+                print([b, board.turn], file = pos_file)
                 # print(piece_class)
                 pos_file.close()
             game = chess.pgn.read_game(pgn)
