@@ -9,8 +9,6 @@ from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
 from joblib import dump, load
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
 
 
 
@@ -21,15 +19,10 @@ def read_position(file):
     pos_str = pos_str.replace('[', '').replace(']', '').replace('(', '').replace(')', '').replace("'", '').replace('\n', ',').replace(' ', '')
     pos_str = pos_str.strip(',')
     arr = pos_str.split(',')
-    i = 0
-    j = 1
-    tdarr = np.zeros((8,8,2))
-    for k in range(8):
-        for l in range(8):
-            tdarr[l][k][0] = ord(arr[i])
-            tdarr[l][k][1] = ord(arr[j])
-            i+=2
-            j+=2
+    tdarr = np.zeros(129)
+    for i in range(128):
+        tdarr[i] = ord(arr[i])
+    tdarr[128] = arr[-1]
     return tdarr
 
 def get_labels(file_name):
@@ -52,10 +45,10 @@ def train_tree_classifier():
     y_train = get_labels("chess_labels_train.csv")
     
 
-    d1, d2, d3, d4 = X_train.shape
-    X_train2 = X_train.reshape((d1, d2*d3*d4))
+    #d1, d2, d3, d4 = X_train.shape
+    #X_train2 = X_train.reshape((d1, d2*d3*d4))
     clf = tree.DecisionTreeClassifier()
-    clf = clf.fit(X_train2, y_train)
+    clf = clf.fit(X_train, y_train)
     
     dump(clf, 'tree1000-1200ELO.joblib')
     return 
@@ -63,9 +56,9 @@ def train_tree_classifier():
 X_test = np.array(get_positions("./chessdataset/test/"))
 y_test = get_labels("chess_labels_test.csv")
 
-d1, d2, d3, d4 = X_test.shape
-X_test2 = X_test.reshape((d1, d2*d3*d4))
+#d1, d2, d3, d4 = X_test.shape
+#X_test2 = X_test.reshape((d1, d2*d3*d4))
 
 train_tree_classifier()
 clf = load('tree1000-1200ELO.joblib')
-print(clf.score(X_test2, y_test))
+print(clf.score(X_test, y_test))
