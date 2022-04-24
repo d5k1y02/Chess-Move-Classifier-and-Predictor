@@ -6,7 +6,11 @@
 import os
 import numpy as np
 from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
 from joblib import dump, load
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
 
 
 
@@ -53,7 +57,7 @@ def train_tree_classifier():
     clf = tree.DecisionTreeClassifier()
     clf = clf.fit(X_train2, y_train)
     
-    dump(clf, 'tree.joblib')
+    dump(clf, 'tree1000-1200ELO.joblib')
     return 
 
 X_test = np.array(get_positions("./chessdataset/test/"))
@@ -63,5 +67,5 @@ d1, d2, d3, d4 = X_test.shape
 X_test2 = X_test.reshape((d1, d2*d3*d4))
 
 train_tree_classifier()
-clf = load('tree.joblib')
+clf = load('tree1000-1200ELO.joblib')
 print(clf.score(X_test2, y_test))
