@@ -252,6 +252,6 @@ def create_classify_file(input_file, label_csv, is_testset = False):
 
 l_csv_train = "chess_labels_train.csv"
 l_csv_test = "chess_labels_test.csv"
-create_classify_file("1000-1200EloRapidGamesTrainingSet1000.pgn", l_csv_train)    
-create_classify_file("1000-1200EloRapidGamesTestSet500.pgn", l_csv_test, True)  
+create_classify_file("guillo-krapidgamestrain190.pgn", l_csv_train)    
+create_classify_file("guillo-krapidgamestest48.pgn", l_csv_test, True)  
     
