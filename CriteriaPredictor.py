@@ -68,8 +68,8 @@ def train_nn_keras():
     y_train = np.array(get_labels("chess_labels_train.csv"))
     X_test = np.array(get_positions("./chessdataset/test/"))
     y_test = np.array(get_labels("chess_labels_test.csv"))
-    y_train_tf = tf.keras.utils.to_categorical(y_train-1, num_classes = 6)
-    y_test_tf = tf.keras.utils.to_categorical(y_test-1, num_classes = 6)
+    y_train_tf = tf.keras.utils.to_categorical(y_train, num_classes = 6)
+    y_test_tf = tf.keras.utils.to_categorical(y_test, num_classes = 6)
     train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train_tf))
     test_dataset = tf.data.Dataset.from_tensor_slices((X_test, y_test_tf))
 
@@ -121,20 +121,27 @@ def train_tree_classifier():
     clf = tree.DecisionTreeClassifier()
     clf = clf.fit(X_train, y_train)
     print(clf.score(X_test, y_test))
-    dump(clf, 'tree1400-1600ELO.joblib')
+    dump(clf, 'guillotree.joblib')
     return 
 
+X_train = np.array(get_positions("./chessdataset/train/"))
 X_test = np.array(get_positions("./chessdataset/test/"))
 y_test = get_labels("chess_labels_test.csv")
-
+y_train = get_labels("chess_labels_train.csv")
 
 
 #d1, d2, d3, d4 = X_test.shape
 #X_test2 = X_test.reshape((d1, d2*d3*d4))
 
 #train_tree_classifier()
+#train_tree_classifier()
 train_nn_keras()
-#clf = load('tree1400-1600ELO.joblib')
+#clf = load('guillotree.joblib')
 # text_representation = tree.export_text(clf)
 # print(text_representation)
-#print(clf.score(X_test, y_test))
+#print(clf.predict(X_test))
+# predictions = clf.predict(X_test)
+
+# ConfusionMatrixDisplay.from_predictions(y_test,predictions)
+# plt.show()
+# print(clf.score(X_test, y_test))
