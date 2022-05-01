@@ -66,12 +66,62 @@ def get_positions(path):
 def train_nn_keras():
     X_train = np.array(get_positions("./chessdataset/train/"))
     y_train = np.array(get_labels("chess_labels_train.csv"))
+    X_train_s = []
+    y_train_s = []
+    max_class = 2300
+    class0 = 0
+    class1 = 0
+    class2 = 0
+    class3 = 0
+    class4 = 0
+    class5 = 0
+    for i in range(len(y_train)):
+        if(y_train[i] == 0):
+            class0 += 1
+            if(class0 <= max_class):
+                X_train_s.append(X_train[i])
+                y_train_s.append(y_train[i])
+        elif(y_train[i] == 1):
+            class1 += 1
+            if(class1 <= max_class):
+                X_train_s.append(X_train[i])
+                y_train_s.append(y_train[i])
+        elif(y_train[i] == 2):
+            class2 += 1
+            if(class2 <= max_class):
+                X_train_s.append(X_train[i])
+                y_train_s.append(y_train[i])
+        elif(y_train[i] == 3):
+            class3 += 1
+            if(class3 <= max_class):
+                X_train_s.append(X_train[i])
+                y_train_s.append(y_train[i])
+        elif(y_train[i] == 4):
+            class4 += 1
+            if(class4 <= max_class):
+                X_train_s.append(X_train[i])
+                y_train_s.append(y_train[i])
+        elif(y_train[i] == 5):
+            class5 += 1
+            if(class5 <= max_class):
+                X_train_s.append(X_train[i])
+                y_train_s.append(y_train[i])
+          
+    X_train_s = np.array(X_train_s)
+    y_train_s = np.array(y_train_s)
     X_test = np.array(get_positions("./chessdataset/test/"))
     y_test = np.array(get_labels("chess_labels_test.csv"))
-    y_train_tf = tf.keras.utils.to_categorical(y_train, num_classes = 6)
+    y_train_tf = tf.keras.utils.to_categorical(y_train_s, num_classes = 6)
     y_test_tf = tf.keras.utils.to_categorical(y_test, num_classes = 6)
-    train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train_tf))
+    train_dataset = tf.data.Dataset.from_tensor_slices((X_train_s, y_train_tf))
     test_dataset = tf.data.Dataset.from_tensor_slices((X_test, y_test_tf))
+
+    print("class0: ", (y_train_s == 0).sum())
+    print("class1: ", (y_train_s == 1).sum())
+    print("class2: ", (y_train_s == 2).sum())
+    print("class3: ", (y_train_s == 3).sum())
+    print("class4: ", (y_train_s == 4).sum())
+    print("class5: ", (y_train_s == 5).sum())
 
     BATCH_SIZE = 10
     SHUFFLE_BUFFER_SIZE = 100
@@ -85,7 +135,7 @@ def train_nn_keras():
     my_init = initializers.RandomUniform(minval = -0.05, maxval = 0.05, seed = None) 
     model = tf.keras.Sequential([
     tf.keras.layers.Dense(512, activation='relu', kernel_initializer = my_init),
-    tf.keras.layers.Dense(64, activation='sigmoid'),
+    tf.keras.layers.Dense(64),
     tf.keras.layers.Dense(6, activation = tf.keras.activations.softmax)
     ])
 
@@ -93,7 +143,7 @@ def train_nn_keras():
                 loss= 'categorical_crossentropy',
                 metrics=['categorical_accuracy'])
 
-    model.fit(train_dataset, epochs=50)
+    model.fit(train_dataset, epochs=40)
     model.summary()
     print(model.evaluate(test_dataset))
     predictions = model.predict(X_test)
@@ -110,6 +160,14 @@ def train_nn_keras():
 
     ConfusionMatrixDisplay.from_predictions(y_test,y_pred)
     plt.show()
+
+    tf.keras.models.save_model(
+    model,
+    './',
+    overwrite=True,
+    include_optimizer=True,
+)
+    
 
 def train_tree_classifier():
     X_train = np.array(get_positions("./chessdataset/train/"))
